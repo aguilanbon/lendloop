@@ -21,7 +21,7 @@ Built with Next.js 16 (App Router), Clerk, Convex, n8n and TypeScript, as a take
 
 **https://lendloop-kappa.vercel.app**: sign up with any email or Google (Clerk runs in development mode, so you'll see its badge). It has demo data: three neighbours, six tools, a pending request and an overdue loan.
 
-- **n8n isn't connected to the live site.** The deployment has no public n8n instance, so loan events are recorded as `skipped` instead of being sent. Admins can see them under **Admin → Automation health**. Both workflows and the error handler were tested end to end against a local n8n (see [n8n integration](#n8n-integration-reliability-and-error-handling)). The overdue-reminder workflow was also run from a local n8n against the live Convex backend, so the overdue demo loan shows a real "Reminder sent" entry.
+- **n8n isn't connected to the live site.** The deployment has no public n8n instance, so loan events are recorded as `skipped` instead of being sent. Admins can see them under **Admin → Automation health**. Both workflows and the error handler were tested end to end against a local n8n (see [n8n integration](#n8n-integration-reliability-and-error-handling)). The overdue-reminder workflow was also run from a local n8n against the live Convex backend, so the overdue demo loan shows a real "Reminder sent" entry ([screenshots](#screenshots)).
 - **Admin features:** new accounts are plain users, and admin can only be granted from the Convex CLI. To try the admin view (remove any listing, all loans, Trusted Lender, automation health, audit trail), email aguilanbon@gmail.com and I'll upgrade your account, or run it locally with `npx convex run users:grantAdmin`.
 
 ## What's in it
@@ -261,6 +261,28 @@ No secret is in the code or in the workflow JSON. `.env*` files are git-ignored 
 **Workflow JSON contains no credentials.** Secrets come from env vars at run time. The workflows have fixed ids, so CLI or Docker import keeps the error-workflow link. If you import through the UI instead, re-select the error workflow under each workflow's **Settings**. In n8n 2.x the error handler must be **published** as well, or n8n won't run it.
 
 All three workflows were tested end to end on n8n 2.46.7 against a local Convex backend: a signed event delivered and written back, a bad signature rejected with 401, a replayed event producing no duplicate, the mock provider failing and being recorded as `failed` after 3 tries, a malformed event tripping the error handler (and showing up in Convex), and the daily reminder sending once and finding nothing to send on a second run.
+
+### Screenshots
+
+**Loan event notifications.** Verify the signature, answer 401 or 202, drop events already handled, compose, send (mock) with retries, write the result back signed.
+
+![Loan event notifications workflow](docs/screenshots/n8n-loan-event-notifications.png)
+
+**Overdue reminders (daily).** Signed fetch of overdue loans from Convex, one reminder per loan, status written back with an idempotency key.
+
+![Overdue reminders workflow](docs/screenshots/n8n-overdue-reminders.png)
+
+**Error handler.** Set as the error workflow of the two above; reports failed runs to Convex so admins see them in the app.
+
+![Error handler workflow](docs/screenshots/n8n-error-handler.png)
+
+**A second reminder run on the same day.** It fetches from Convex, finds nothing (the loan was already reminded today) and sends nothing.
+
+![Second run of the reminder workflow sends nothing](docs/screenshots/n8n-reminders-second-run.png)
+
+**The result on the live site** (Admin → All loans). The reminder written back by n8n shows on the overdue loan.
+
+![Reminder sent shown on the live admin page](docs/screenshots/admin-reminder-sent-live.png)
 
 ## Tests
 
