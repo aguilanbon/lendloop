@@ -96,9 +96,9 @@ Keep `npx convex dev` running in its own terminal. It pushes functions on every 
 ### 2. Clerk
 
 1. Create a Clerk application. Copy the publishable and secret keys into `.env.local` (see [`.env.example`](.env.example)).
-2. In the Clerk dashboard, open **Integrations → Convex** and activate it. This creates the `convex` JWT template.
-3. Make sure that template includes `name` and `email` claims. Add them if missing:
-   `"name": "{{user.full_name}}", "email": "{{user.primary_email_address}}"`
+2. In **Configure → JWT templates**, create a template named `convex` with these claims:
+   `{ "aud": "convex", "name": "{{user.full_name}}", "email": "{{user.primary_email_address}}" }`
+   (Clerk's one-click Convex integration also works for sign-in, but its token has no email, so notifications would be skipped.)
 4. Copy your **Frontend API URL** and give it to Convex:
 
    ```bash
@@ -165,6 +165,14 @@ npx n8n start
 - Open "LendLoop – Overdue reminders" and click **Execute workflow** to run the daily job now.
 - To see the failure path, give a user an email ending in `@fail.test`: the mock provider fails, n8n retries 3 times, and the loan shows "Notification failed".
 - Stop Convex and run the reminder workflow: the HTTP node retries, the run fails, the error handler reports it, and it appears under **Admin → Automation health** once Convex is back. (The error handler's own HTTP call retries 5 times over ~40 seconds.)
+
+### 5. Deploy (Vercel)
+
+`vercel.json` sets the build command to `npx convex deploy --cmd 'npm run build'`, so each deploy pushes Convex functions to production and then builds Next.js against them.
+
+1. Convex dashboard → your project → **Production** → Settings → generate a **Production deploy key**.
+2. Import the repo in Vercel. Add `CONVEX_DEPLOY_KEY` (Production environment only, so previews never deploy to prod), `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`.
+3. Set the Convex prod env vars with `npx convex env set --prod ...` (same list as above), then `npx convex run --prod seed:demo` for demo data.
 
 ## Environment variables
 
