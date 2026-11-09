@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@edge-runtime/vm": "^5.0.0",
-    "@tailwindcss/turbopack": "^4",
+    "@tailwindcss/postcss": "^4.3.5",
     "@types/node": "^24.19.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
