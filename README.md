@@ -6,6 +6,7 @@ A neighbourhood tool-lending board. Neighbours list tools, request to borrow the
 
 Built with Next.js 16 (App Router), Clerk, Convex, n8n and TypeScript, as a take-home for Fluence.
 
+- [Live demo](#live-demo)
 - [What's in it](#whats-in-it)
 - [Architecture](#architecture)
 - [Local setup](#local-setup)
@@ -15,6 +16,13 @@ Built with Next.js 16 (App Router), Clerk, Convex, n8n and TypeScript, as a take
 - [Tests](#tests)
 - [Project layout](#project-layout)
 - [Running it in production](docs/PRODUCTION.md)
+
+## Live demo
+
+**https://lendloop-kappa.vercel.app**: sign up with any email or Google (Clerk runs in development mode, so you'll see its badge). It has demo data: three neighbours, six tools, a pending request and an overdue loan.
+
+- **n8n isn't connected to the live site.** The deployment has no public n8n instance, so loan events are recorded as `skipped` instead of being sent. Admins can see them under **Admin → Automation health**. Both workflows and the error handler were tested end to end against a local n8n (see [n8n integration](#n8n-integration-reliability-and-error-handling)). The overdue-reminder workflow was also run from a local n8n against the live Convex backend, so the overdue demo loan shows a real "Reminder sent" entry.
+- **Admin features:** new accounts are plain users, and admin can only be granted from the Convex CLI. To try the admin view (remove any listing, all loans, Trusted Lender, automation health, audit trail), email aguilanbon@gmail.com and I'll upgrade your account, or run it locally with `npx convex run users:grantAdmin`.
 
 ## What's in it
 
