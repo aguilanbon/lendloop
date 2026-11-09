@@ -18,7 +18,10 @@ export default function AdminPage() {
   }
   return (
     <>
-      <PageHeader title="Admin" description="Moderation, automation health and the audit trail." />
+      <PageHeader
+        title="Admin"
+        description="Automation health, people, all loans and the audit trail. Remove any listing from Browse."
+      />
       <div className="space-y-12">
         <AutomationHealth />
         <People />

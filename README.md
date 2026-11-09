@@ -25,7 +25,7 @@ Built with Next.js 16 (App Router), Clerk, Convex, n8n and TypeScript, as a take
 | Browse all tools with availability, filter by category, request a date range | `/tools` |
 | My listings, My requests, Incoming requests | `/listings`, `/requests`, `/incoming` |
 | Approve, decline, mark returned (lender); cancel (borrower) | [`convex/loans.ts`](convex/loans.ts) |
-| Admin: remove any listing, view all loans, mark Trusted Lender | `/admin`, [`convex/users.ts`](convex/users.ts) |
+| Admin: remove any listing (Remove button on Browse), view all loans, mark Trusted Lender | `/tools`, `/admin`, [`convex/users.ts`](convex/users.ts) |
 | RBAC enforced in Convex functions | [`convex/lib/auth.ts`](convex/lib/auth.ts) |
 | n8n workflow 1: request created / status changed → notify the right person | [`n8n/workflows/1-loan-event-notifications.json`](n8n/workflows/1-loan-event-notifications.json) |
 | n8n workflow 2: daily overdue reminders with status written back | [`n8n/workflows/2-overdue-reminders.json`](n8n/workflows/2-overdue-reminders.json) |
@@ -138,8 +138,8 @@ npx convex env set N8N_LOAN_EVENTS_WEBHOOK_URL http://localhost:5678/webhook/len
 #### Option A: Docker (recommended)
 
 ```bash
-cp .env.n8n.example .env    # paste the same two secrets, set N8N_ENCRYPTION_KEY
-docker compose up -d        # imports and publishes the three workflows
+cp .env.n8n.example .env.n8n                # paste the same two secrets, set N8N_ENCRYPTION_KEY
+docker compose --env-file .env.n8n up -d    # imports and publishes the three workflows
 ```
 
 Open <http://localhost:5678> and create the owner account.
@@ -185,7 +185,7 @@ npx n8n start
 | `CONVEX_TO_N8N_SECRET` | Convex env **and** n8n env | Convex signs webhooks with it; n8n verifies |
 | `N8N_TO_CONVEX_SECRET` | Convex env **and** n8n env | n8n signs its calls with it; Convex verifies |
 | `LENDLOOP_CONVEX_SITE_URL` | n8n env | Base URL of Convex HTTP actions (`…convex.site` or `:3211` locally) |
-| `N8N_ENCRYPTION_KEY` | n8n env (Docker) | Encrypts n8n's stored credentials |
+| `N8N_ENCRYPTION_KEY` | n8n env (`.env.n8n` for Docker) | Encrypts n8n's stored credentials |
 | `NODE_FUNCTION_ALLOW_BUILTIN=crypto`, `N8N_BLOCK_ENV_ACCESS_IN_NODE=false` | n8n env | Let Code nodes compute HMACs and read the two secrets from env |
 
 No secret is in the code or in the workflow JSON. `.env*` files are git-ignored except the two examples.
@@ -257,7 +257,7 @@ All three workflows were tested end to end on n8n 2.46.7 against a local Convex 
 ## Tests
 
 ```bash
-npm test          # 43 backend tests (convex-test + vitest)
+npm test          # 44 backend tests (convex-test + vitest)
 npm run lint
 npm run typecheck
 ```

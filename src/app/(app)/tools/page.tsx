@@ -1,19 +1,23 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import Link from "next/link";
 import { useState } from "react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { TOOL_CATEGORIES, type ToolCategory } from "@convex/lib/validators";
+import { useMe } from "@/components/AppShell";
 import { AvailabilityBadge } from "@/components/AvailabilityBadge";
 import { RequestForm } from "@/components/RequestForm";
-import { Badge, Button, Card, Dialog, EmptyState, Loading, PageHeader } from "@/components/ui";
+import { ActionButton, Badge, Button, Card, Dialog, EmptyState, Loading, PageHeader } from "@/components/ui";
 import { CATEGORY_LABELS, CONDITION_LABELS } from "@/lib/format";
 
 export default function BrowsePage() {
   const [category, setCategory] = useState<ToolCategory | undefined>();
   const tools = useQuery(api.tools.listAll, { category });
+  const me = useMe();
+  // Admins moderate from here. The server checks the role again (requireToolOwner with allowAdmin).
+  const removeListing = useMutation(api.tools.remove);
   const [requesting, setRequesting] = useState<{ id: Id<"tools">; name: string } | null>(null);
   const [sentFor, setSentFor] = useState<string | null>(null);
 
@@ -62,13 +66,24 @@ export default function BrowsePage() {
                     {tool.isMine ? "Your listing" : tool.owner.name}
                     {tool.owner.trustedLender && <Badge tone="accent">Trusted Lender</Badge>}
                   </p>
-                  {tool.isMine ? null : tool.requestedByMe ? (
-                    <Badge tone="warn">Requested</Badge>
-                  ) : (
-                    <Button variant="primary" onClick={() => setRequesting({ id: tool._id, name: tool.name })}>
-                      Request
-                    </Button>
-                  )}
+                  <div className="flex items-start gap-2">
+                    {me.role === "admin" && !tool.isMine && (
+                      <ActionButton
+                        variant="danger"
+                        confirm={`Remove "${tool.name}" as an admin? Pending requests for it will be declined.`}
+                        action={() => removeListing({ toolId: tool._id })}
+                      >
+                        Remove
+                      </ActionButton>
+                    )}
+                    {tool.isMine ? null : tool.requestedByMe ? (
+                      <Badge tone="warn">Requested</Badge>
+                    ) : (
+                      <Button variant="primary" onClick={() => setRequesting({ id: tool._id, name: tool.name })}>
+                        Request
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </Card>
             </li>
