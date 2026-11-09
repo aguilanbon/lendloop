@@ -42,6 +42,7 @@ next-env.d.ts
 
 # keep the example env file
 !.env.example
+!.env.n8n.example
 
 # local Convex backend data (anonymous/local deployments)
 .convex/

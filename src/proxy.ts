@@ -1,19 +1,10 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 
-// First line of defence only: signed-out visitors get sent to sign in before
-// a private page renders. The real access rules are enforced in Convex, so a
-// request that skips this (e.g. calling Convex directly) is still checked.
-const isPrivate = createRouteMatcher([
-  "/tools(.*)",
-  "/listings(.*)",
-  "/requests(.*)",
-  "/incoming(.*)",
-  "/admin(.*)",
-]);
-
-export default clerkMiddleware(async (auth, req) => {
-  if (isPrivate(req)) await auth.protect();
-});
+// Clerk's session handling only. Access isn't decided here by URL matching:
+// every Convex function checks the caller itself (convex/lib/auth.ts), and the
+// signed-in app shell redirects signed-out visitors to sign in. That follows
+// Clerk's guidance to check auth where the data is, not by path.
+export default clerkMiddleware();
 
 export const config = {
   matcher: [

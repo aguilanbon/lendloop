@@ -1,0 +1,58 @@
+# Self-hosted n8n for LendLoop.
+#
+#   cp .env.n8n.example .env      # then fill in the secrets
+#   docker compose up -d
+#   open http://localhost:5678
+#
+# On start, `n8n-import` loads the three workflows from ./n8n/workflows (keeping
+# their ids, so the error workflow stays wired up) and activates them. Re-running
+# it overwrites UI edits to those workflows, so export changes back to the repo.
+
+x-n8n-env: &n8n-env
+  GENERIC_TIMEZONE: ${GENERIC_TIMEZONE:-UTC}
+  TZ: ${GENERIC_TIMEZONE:-UTC}
+  N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?set N8N_ENCRYPTION_KEY in .env}
+  # Code nodes need Node's crypto module for HMAC, and read the two shared
+  # secrets from env vars so they never appear in workflow JSON.
+  NODE_FUNCTION_ALLOW_BUILTIN: crypto
+  N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+  LENDLOOP_CONVEX_SITE_URL: ${LENDLOOP_CONVEX_SITE_URL:?set LENDLOOP_CONVEX_SITE_URL in .env}
+  CONVEX_TO_N8N_SECRET: ${CONVEX_TO_N8N_SECRET:?set CONVEX_TO_N8N_SECRET in .env}
+  N8N_TO_CONVEX_SECRET: ${N8N_TO_CONVEX_SECRET:?set N8N_TO_CONVEX_SECRET in .env}
+  # Keep execution history for a week, then prune it: it holds names and emails.
+  EXECUTIONS_DATA_PRUNE: "true"
+  EXECUTIONS_DATA_MAX_AGE: "168"
+  N8N_DIAGNOSTICS_ENABLED: "false"
+  N8N_PERSONALIZATION_ENABLED: "false"
+
+services:
+  n8n-import:
+    image: docker.n8n.io/n8nio/n8n:${N8N_VERSION:-2.46.7}
+    environment: *n8n-env
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >
+        n8n import:workflow --separate --input=/workflows &&
+        n8n update:workflow --all --active=true
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/workflows:ro
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:${N8N_VERSION:-2.46.7}
+    restart: unless-stopped
+    depends_on:
+      n8n-import:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment: *n8n-env
+    # Lets the container reach a Convex backend running on the host
+    # (`npx convex dev` local deployment) at host.docker.internal:3211.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  n8n_data:

@@ -1,0 +1,97 @@
+{
+  "id": "LendLoopErrorsWF",
+  "name": "LendLoop – Error handler",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "25a6f902-2bb1-428b-8328-9474e63cc685",
+      "name": "On workflow error",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\n// Signs a body for Convex with N8N_TO_CONVEX_SECRET (an env var, never stored\n// in this workflow). Convex checks the signature and rejects timestamps older\n// than 5 minutes.\nfunction signForConvex(payload) {\n  const secret = $env.N8N_TO_CONVEX_SECRET;\n  if (!secret) throw new Error('N8N_TO_CONVEX_SECRET is not set');\n  const body = JSON.stringify(payload);\n  const timestamp = Math.floor(Date.now() / 1000).toString();\n  const signature = 'v1=' + crypto.createHmac('sha256', secret).update(timestamp + '.' + body).digest('hex');\n  return { body, timestamp, signature };\n}\n\n// n8n calls this workflow when a LendLoop workflow fails (after node retries).\n// It sends a short, PII-free report to Convex so admins see it in the app.\nconst e = $input.first().json;\nconst execution = e.execution || {};\nconst trigger = e.trigger || {};\nconst error = execution.error || trigger.error || {};\n\nconst report = {\n  // Trigger failures have no execution id; fall back to one per workflow per minute.\n  executionId: String(execution.id || ('trigger-' + (e.workflow && e.workflow.id) + '-' + Math.floor(Date.now() / 60000))),\n  workflowName: String((e.workflow && e.workflow.name) || 'unknown').slice(0, 120),\n  nodeName: execution.lastNodeExecuted || (error.node && error.node.name) || undefined,\n  message: String(error.message || 'Unknown error').slice(0, 500),\n};\nconsole.error('[lendloop] workflow failed: ' + report.workflowName + ' at ' + report.nodeName + ': ' + report.message);\n\nreturn [{ json: signForConvex(report) }];"
+      },
+      "id": "fab9ae91-7d60-4c74-835c-dd6909141f1f",
+      "name": "Build report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.LENDLOOP_CONVEX_SITE_URL }}/n8n/workflow-errors",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-LendLoop-Timestamp",
+              "value": "={{ $json.timestamp }}"
+            },
+            {
+              "name": "X-LendLoop-Signature",
+              "value": "={{ $json.signature }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $json.body }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "f7785af5-b6d6-4b36-8480-c788aff7966d",
+      "name": "Report to Convex",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        300
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 10000
+    }
+  ],
+  "connections": {
+    "On workflow error": {
+      "main": [
+        [
+          {
+            "node": "Build report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build report": {
+      "main": [
+        [
+          {
+            "node": "Report to Convex",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}
