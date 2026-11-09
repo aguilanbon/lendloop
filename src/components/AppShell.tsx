@@ -89,7 +89,7 @@ function Frame({ me, children }: { me?: Me; children: ReactNode }) {
         </div>
       </header>
       {me && (
-        <nav className="-mx-4 mb-8 overflow-x-auto border-b border-line px-4 sm:mx-0 sm:px-0">
+        <nav className="-mx-4 mb-8 overflow-x-auto overflow-y-hidden border-b border-line px-4 sm:mx-0 sm:px-0">
           <ul className="flex gap-1">
             {items.map((item) => {
               const active = pathname.startsWith(item.href);
@@ -104,7 +104,7 @@ function Frame({ me, children }: { me?: Me; children: ReactNode }) {
                   >
                     {item.label}
                     {item.href === "/incoming" && <PendingCount />}
-                    {active && <span className="absolute inset-x-2 -bottom-px h-0.5 rounded bg-accent" />}
+                    {active && <span className="absolute inset-x-2 bottom-0 h-0.5 rounded bg-accent" />}
                   </Link>
                 </li>
               );

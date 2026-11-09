@@ -57,6 +57,15 @@ describe("listings", () => {
     expect(await alice.as.query(api.users.me, {})).toMatchObject({ role: "user" });
   });
 
+  test("a token without name or email never wipes what we already have", async () => {
+    const t = setup();
+    const alice = await signIn(t, "Alice");
+    const bare = t.withIdentity({ tokenIdentifier: "test|Alice", subject: "Alice" });
+    await bare.mutation(api.users.ensureUser, {});
+    const row = await t.run((ctx) => ctx.db.get(alice.userId));
+    expect(row).toMatchObject({ name: "Alice", email: "alice@example.com" });
+  });
+
   test("a user can't edit or delete someone else's listing", async () => {
     const t = setup();
     const alice = await signIn(t, "Alice");

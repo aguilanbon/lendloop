@@ -28,9 +28,13 @@ export const ensureUser = mutation({
 
     const existing = await getViewer(ctx);
     if (existing) {
-      if (existing.name !== name || existing.email !== email) {
-        await ctx.db.patch(existing._id, { name, email });
-      }
+      // Only sync what the token actually carries: a token without claims
+      // must never wipe a name or email we already have.
+      const patch: { name?: string; email?: string } = {};
+      const tokenName = (identity.name ?? identity.givenName ?? identity.nickname)?.slice(0, MAX_NAME);
+      if (tokenName && tokenName !== existing.name) patch.name = tokenName;
+      if (email && email !== existing.email) patch.email = email;
+      if (Object.keys(patch).length > 0) await ctx.db.patch(existing._id, patch);
       return existing._id;
     }
     return await ctx.db.insert("users", {

@@ -55,6 +55,13 @@ body {
   color: var(--ink);
 }
 
+/* Tailwind v4 resets buttons to the default cursor; clickable things get the hand. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+summary {
+  cursor: pointer;
+}
+
 dialog::backdrop {
   background: rgb(20 18 15 / 0.45);
 }
