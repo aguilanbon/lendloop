@@ -5,7 +5,7 @@ Bon (aguilanbon@gmail.com) is applying for **Fluence International's remote Full
 Step 1 of their process is this take-home. The finished repo's GitHub link goes into the application email.
 The full job post, including the take-home spec, is in [docs/JOB_POST.md](docs/JOB_POST.md). **Read it first. It is the source of truth.**
 
-Bon decided on 2026-11-09 to build this. It's the strongest lead in a wider remote job hunt (see `C:\Users\Admin\Downloads\Remote Job Hunt\`).
+Bon decided on 2026-11-09 to build this. It's the strongest lead in a wider remote job hunt (repo aguilanbon/job-hunt, cloned at E:\Bon\job-hunt).
 Bon is a full-stack engineer with 4+ years in React/Next.js/TypeScript and Node, and production experience on Convex: his own game CrossSwords, in E:\Bon\crossswords. The post explicitly allows using LLMs to write the code.
 
 ## What gets judged (from the post)
@@ -72,8 +72,8 @@ Send to **techjobs@fluencetraining.com**. It must include:
 - a short note on a security/privacy measure he built or would build in a healthcare-like setting
 - the word **"pineapple"**, the post's read-carefully check for applicants
 
-The post screens out AI-written applications, so the email must be in Bon's own words. A starting draft is in `C:\Users\Admin\Downloads\Remote Job Hunt\Cover notes.md`, section 1.
-Resume: `C:\Users\Admin\Downloads\Remote Job Hunt\Bon_Aguilan_Resume.pdf`.
+The post screens out AI-written applications, so the email must be in Bon's own words. A starting draft is in `E:\Bon\job-hunt\docs\Cover notes.md`, section 1.
+Resume: `E:\Bon\job-hunt\resume\Bon_Aguilan_Resume.pdf`.
 
 ## Working with Bon
 - Plain English, short sentences. Explain decisions briefly.
