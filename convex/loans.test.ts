@@ -12,7 +12,7 @@ afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
   delete process.env.N8N_LOAN_EVENTS_WEBHOOK_URL;
-  delete process.env.N8N_OUTBOUND_SECRET;
+  delete process.env.CONVEX_TO_N8N_SECRET;
 });
 
 async function scenario() {
@@ -143,8 +143,10 @@ describe("webhook outbox", () => {
 
   test("delivery signs the body so n8n can verify it", async () => {
     process.env.N8N_LOAN_EVENTS_WEBHOOK_URL = "https://n8n.test/webhook/lendloop";
-    process.env.N8N_OUTBOUND_SECRET = "outbound-secret";
-    const fetchMock = vi.fn(async (_url: string, _init: RequestInit) => new Response("ok"));
+    process.env.CONVEX_TO_N8N_SECRET = "outbound-secret";
+    const fetchMock = vi.fn<(url: string, init: RequestInit) => Promise<Response>>(
+      async () => new Response("ok"),
+    );
     vi.stubGlobal("fetch", fetchMock);
 
     const { t, outboxId } = await queuedEvent();
@@ -164,7 +166,7 @@ describe("webhook outbox", () => {
 
   test("5xx and network errors retry with backoff; other 4xx fail at once", async () => {
     process.env.N8N_LOAN_EVENTS_WEBHOOK_URL = "https://n8n.test/webhook/lendloop";
-    process.env.N8N_OUTBOUND_SECRET = "outbound-secret";
+    process.env.CONVEX_TO_N8N_SECRET = "outbound-secret";
 
     vi.stubGlobal("fetch", vi.fn(async () => new Response("down", { status: 503 })));
     const first = await queuedEvent();

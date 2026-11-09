@@ -5,7 +5,7 @@ import { httpAction, type ActionCtx } from "./_generated/server";
 import { SIGNATURE_HEADER, TIMESTAMP_HEADER, verify } from "./lib/hmac";
 
 // n8n → Convex endpoints. All are POST with a JSON body and all require an
-// HMAC signature made with N8N_INBOUND_SECRET (a different secret from the one
+// HMAC signature made with N8N_TO_CONVEX_SECRET (a different secret from the one
 // Convex uses to sign outbound webhooks, so leaking one doesn't open both
 // directions). Failures return a generic message; the exact reason is only
 // logged server-side.
@@ -23,9 +23,9 @@ function json(status: number, data: unknown): Response {
 
 function signedRoute(name: string, handler: Handler) {
   return httpAction(async (ctx, request) => {
-    const secret = process.env.N8N_INBOUND_SECRET;
+    const secret = process.env.N8N_TO_CONVEX_SECRET;
     if (!secret) {
-      console.error(`[http:${name}] N8N_INBOUND_SECRET is not set`);
+      console.error(`[http:${name}] N8N_TO_CONVEX_SECRET is not set`);
       return json(503, { error: "not configured" });
     }
 

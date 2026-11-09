@@ -128,12 +128,12 @@ export const deliver = internalAction({
     if (!row) return;
 
     const url = process.env.N8N_LOAN_EVENTS_WEBHOOK_URL;
-    const secret = process.env.N8N_OUTBOUND_SECRET;
+    const secret = process.env.CONVEX_TO_N8N_SECRET;
     if (!url || !secret) {
       await ctx.runMutation(internal.notifications.recordResult, {
         outboxId,
         outcome: "skipped",
-        error: "n8n is not configured (N8N_LOAN_EVENTS_WEBHOOK_URL / N8N_OUTBOUND_SECRET).",
+        error: "n8n is not configured (N8N_LOAN_EVENTS_WEBHOOK_URL / CONVEX_TO_N8N_SECRET).",
       });
       return;
     }

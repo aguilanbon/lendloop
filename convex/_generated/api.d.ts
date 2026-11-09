@@ -19,6 +19,7 @@ import type * as lib_hmac from "../lib/hmac.js";
 import type * as lib_validators from "../lib/validators.js";
 import type * as loans from "../loans.js";
 import type * as notifications from "../notifications.js";
+import type * as seed from "../seed.js";
 import type * as tools from "../tools.js";
 import type * as users from "../users.js";
 
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   "lib/validators": typeof lib_validators;
   loans: typeof loans;
   notifications: typeof notifications;
+  seed: typeof seed;
   tools: typeof tools;
   users: typeof users;
 }>;

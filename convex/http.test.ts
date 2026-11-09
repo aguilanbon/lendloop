@@ -9,11 +9,11 @@ const SECRET = "inbound-secret";
 beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(NOW);
-  process.env.N8N_INBOUND_SECRET = SECRET;
+  process.env.N8N_TO_CONVEX_SECRET = SECRET;
 });
 afterEach(() => {
   vi.useRealTimers();
-  delete process.env.N8N_INBOUND_SECRET;
+  delete process.env.N8N_TO_CONVEX_SECRET;
 });
 
 async function signedPost(
