@@ -5,7 +5,8 @@
 #   open http://localhost:5678
 #
 # On start, `n8n-import` loads the three workflows from ./n8n/workflows (keeping
-# their ids, so the error workflow stays wired up) and activates them. Re-running
+# their ids, so the error workflow stays wired up) and publishes them. In n8n 2.x
+# the error handler must be published too, or n8n refuses to run it. Re-running
 # it overwrites UI edits to those workflows, so export changes back to the repo.
 
 x-n8n-env: &n8n-env
@@ -33,7 +34,9 @@ services:
     command:
       - >
         n8n import:workflow --separate --input=/workflows &&
-        n8n update:workflow --all --active=true
+        n8n publish:workflow --id=LendLoopErrorsWF &&
+        n8n publish:workflow --id=LendLoopNotifyWF &&
+        n8n publish:workflow --id=LendLoopRemindWF
     volumes:
       - n8n_data:/home/node/.n8n
       - ./n8n/workflows:/workflows:ro

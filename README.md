@@ -139,7 +139,7 @@ npx convex env set N8N_LOAN_EVENTS_WEBHOOK_URL http://localhost:5678/webhook/len
 
 ```bash
 cp .env.n8n.example .env    # paste the same two secrets, set N8N_ENCRYPTION_KEY
-docker compose up -d        # imports and activates the three workflows
+docker compose up -d        # imports and publishes the three workflows
 ```
 
 Open <http://localhost:5678> and create the owner account.
@@ -151,7 +151,9 @@ export LENDLOOP_CONVEX_SITE_URL=http://127.0.0.1:3211   # or https://<deployment
 export CONVEX_TO_N8N_SECRET=...  N8N_TO_CONVEX_SECRET=...
 export NODE_FUNCTION_ALLOW_BUILTIN=crypto N8N_BLOCK_ENV_ACCESS_IN_NODE=false
 npx n8n import:workflow --separate --input=n8n/workflows
-npx n8n update:workflow --all --active=true
+npx n8n publish:workflow --id=LendLoopErrorsWF
+npx n8n publish:workflow --id=LendLoopNotifyWF
+npx n8n publish:workflow --id=LendLoopRemindWF
 npx n8n start
 ```
 
@@ -240,7 +242,9 @@ No secret is in the code or in the workflow JSON. `.env*` files are git-ignored 
 - HTTP calls to Convex retry 3–5 times with waits.
 - Both workflows set **LendLoop – Error handler** as their error workflow. It posts a short report (workflow, node, message, execution id; no personal data) to `/n8n/workflow-errors`. That is idempotent on the execution id and shown to admins in the app. Failures never sit unnoticed inside n8n.
 
-**Workflow JSON contains no credentials.** Secrets come from env vars at run time. The workflows have fixed ids, so CLI or Docker import keeps the error-workflow link. If you import through the UI instead, re-select the error workflow under each workflow's **Settings**.
+**Workflow JSON contains no credentials.** Secrets come from env vars at run time. The workflows have fixed ids, so CLI or Docker import keeps the error-workflow link. If you import through the UI instead, re-select the error workflow under each workflow's **Settings**. In n8n 2.x the error handler must be **published** as well, or n8n won't run it.
+
+All three workflows were tested end to end on n8n 2.46.7 against a local Convex backend: a signed event delivered and written back, a bad signature rejected with 401, a replayed event producing no duplicate, the mock provider failing and being recorded as `failed` after 3 tries, a malformed event tripping the error handler (and showing up in Convex), and the daily reminder sending once and finding nothing to send on a second run.
 
 ## Tests
 
